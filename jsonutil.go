@@ -1,5 +1,18 @@
 package jsonutil
 
+//
+// IMPORTANT:
+//  the JSON decoder will only decode struct attributes with Capital First Letter!
+//  so in case of:
+//		type MyType struct {
+//			ThisWill string
+//			thisWont string
+//		}
+//	only 'ThisWill' will get the proper value, 'thisWont' will be simply ignored!
+//
+// check out the _test to see some examples
+//
+
 import (
 	"encoding/json"
 	"errors"
@@ -11,8 +24,8 @@ import (
 )
 
 func ReadObjectFromJSONReader(reader io.Reader, v interface{}) error {
-	jsonParser := json.NewDecoder(reader)
-	if err := jsonParser.Decode(v); err != nil {
+	jsonDecoder := json.NewDecoder(reader)
+	if err := jsonDecoder.Decode(v); err != nil {
 		return err
 	}
 
@@ -20,12 +33,7 @@ func ReadObjectFromJSONReader(reader io.Reader, v interface{}) error {
 }
 
 func ReadObjectFromJSONString(jsonString string, v interface{}) error {
-	jsonParser := json.NewDecoder(strings.NewReader(jsonString))
-	if err := jsonParser.Decode(v); err != nil {
-		return err
-	}
-
-	return nil
+	return ReadObjectFromJSONReader(strings.NewReader(jsonString), v)
 }
 
 func ReadObjectFromJSONFile(fpath string, v interface{}) error {

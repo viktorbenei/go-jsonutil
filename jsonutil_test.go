@@ -1,13 +1,99 @@
 package jsonutil
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 )
 
+func TestStructDecodingByPropertyVisibility(t *testing.T) {
+	//
+	// IMPORTANT:
+	//  the JSON decoder will only decode struct attributes with Capital First Letter!
+	//  so in case of:
+	//		type MyType struct {
+	//			ThisWill string
+	//			thisWont string
+	//		}
+	//	only 'ThisWill' will get the proper value, 'thisWont' will be simply ignored!
+	//
+
+	testJsonString := `{
+	"this_will": "it was decoded",
+	"this_wont": "but this was not"
+}`
+
+	type MyType struct {
+		ThisWill string `json:"this_will"`
+		thisWont string `json:"this_wont"`
+	}
+
+	reader := strings.NewReader(testJsonString)
+	jsonDecoder := json.NewDecoder(reader)
+	var myObj MyType
+	if err := jsonDecoder.Decode(&myObj); err != nil {
+		t.Error("no error should occur, thisWont should be simply skipped. : ", err)
+	}
+	// Capital ThisWill will be decoded
+	if myObj.ThisWill != "it was decoded" {
+		t.Error("ThisWill was not correctly decoded (it should!)")
+	}
+	// thisWont WON'T be decoded, it will get it's default value.
+	if myObj.thisWont != "" {
+		t.Error("thisWont was decoded??")
+	}
+
+	//
+	// Second issue - rather just a heads up for debugging:
+	//	if you forget the ":" in the field comment it will once again simply skip the parameter
+	// For example: `json:"something"` -> this is ok
+	//				`json"something" -> this will be skipped!
+	//
+	type MySecondType struct {
+		ThisWill string `json:"this_will"`
+		ThisWont string `json"this_wont"`
+	}
+	reader = strings.NewReader(testJsonString)
+	jsonDecoder = json.NewDecoder(reader)
+	var myObj2 MySecondType
+	if err := jsonDecoder.Decode(&myObj2); err != nil {
+		t.Error("no error should occur, thisWont should be simply skipped. : ", err)
+	}
+	// Capital ThisWill will be decoded
+	if myObj2.ThisWill != "it was decoded" {
+		t.Error("ThisWill was not correctly decoded (it should!)")
+	}
+	// ThisWont WON'T be decoded, it will get it's default value because of the missing ":"
+	if myObj2.ThisWont != "" {
+		t.Error("ThisWont was decoded??")
+	}
+
+	//
+	// And a correct, working solution:
+	//
+	type MyThirdType struct {
+		ThisWill string `json:"this_will"`
+		ThisToo  string `json:"this_wont"`
+	}
+	reader = strings.NewReader(testJsonString)
+	jsonDecoder = json.NewDecoder(reader)
+	var myObj3 MyThirdType
+	if err := jsonDecoder.Decode(&myObj3); err != nil {
+		t.Error("no error should occur, thisWont should be simply skipped. : ", err)
+	}
+	// Capital ThisWill will be decoded
+	if myObj3.ThisWill != "it was decoded" {
+		t.Error("ThisWill was not correctly decoded (it should!)")
+	}
+	// This time ThisToo is correct, so it will be decoded properly
+	if myObj3.ThisToo != "but this was not" {
+		t.Error("ThisToo was not correctly decoded (it should!)")
+	}
+}
+
 type JsonObjTest struct {
-	stringField string `json:"string_field"`
-	boolField   bool   `json"bool_field"`
+	StringField string `json:"string_field"`
+	BoolField   bool   `json:"bool_field"`
 }
 
 func TestReadObjectFromJSONReader(t *testing.T) {
@@ -20,11 +106,11 @@ func TestReadObjectFromJSONReader(t *testing.T) {
 	if err := ReadObjectFromJSONReader(strings.NewReader(testConfigJsonContent), &jsonObjTest); err != nil {
 		t.Error("Failed to read: ", err)
 	}
-	if jsonObjTest.stringField != "string_value" {
-		t.Errorf("Read invalid - stringField doesn't match. Expected: string_value | Got: %s", jsonObjTest.stringField)
+	if jsonObjTest.StringField != "string_value" {
+		t.Errorf("Read invalid - stringField doesn't match. Expected: string_value | Got: %s", jsonObjTest.StringField)
 	}
-	if jsonObjTest.boolField != true {
-		t.Errorf("Read invalid - boolField doesn't match. Expected: true | Got: %s", jsonObjTest.boolField)
+	if jsonObjTest.BoolField != true {
+		t.Errorf("Read invalid - boolField doesn't match. Expected: true | Got: %s", jsonObjTest.BoolField)
 	}
 }
 
@@ -38,10 +124,10 @@ func TestReadObjectFromJSONString(t *testing.T) {
 	if err := ReadObjectFromJSONString(testConfigJsonContent, &jsonObjTest); err != nil {
 		t.Error("Failed to read: ", err)
 	}
-	if jsonObjTest.stringField != "string_value" {
-		t.Errorf("Read invalid - stringField doesn't match. Expected: string_value | Got: %s", jsonObjTest.stringField)
+	if jsonObjTest.StringField != "string_value" {
+		t.Errorf("Read invalid - stringField doesn't match. Expected: string_value | Got: %s", jsonObjTest.StringField)
 	}
-	if jsonObjTest.boolField != true {
-		t.Errorf("Read invalid - boolField doesn't match. Expected: true | Got: %s", jsonObjTest.boolField)
+	if jsonObjTest.BoolField != true {
+		t.Errorf("Read invalid - boolField doesn't match. Expected: true | Got: %s", jsonObjTest.BoolField)
 	}
 }
