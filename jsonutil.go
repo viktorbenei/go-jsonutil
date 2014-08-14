@@ -7,10 +7,20 @@ import (
 	"github.com/viktorbenei/go-pathutil"
 	"io"
 	"os"
+	"strings"
 )
 
 func ReadObjectFromJSONReader(reader io.Reader, v interface{}) error {
 	jsonParser := json.NewDecoder(reader)
+	if err := jsonParser.Decode(v); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ReadObjectFromJSONString(jsonString string, v interface{}) error {
+	jsonParser := json.NewDecoder(strings.NewReader(jsonString))
 	if err := jsonParser.Decode(v); err != nil {
 		return err
 	}
