@@ -1,7 +1,9 @@
 package pathutil
 
 import (
+	"errors"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -21,8 +23,11 @@ func IsRelativePath(pth string) bool {
 	return true
 }
 
-func IsPathExists(path string) (bool, error) {
-	_, err := os.Stat(path)
+func IsPathExists(pth string) (bool, error) {
+	if pth == "" {
+		return false, errors.New("No path provided")
+	}
+	_, err := os.Stat(pth)
 	if err == nil {
 		return true, nil
 	}
@@ -30,4 +35,16 @@ func IsPathExists(path string) (bool, error) {
 		return false, nil
 	}
 	return false, err
+}
+
+// Expands ENV vars and the ~ character
+//	then call Go's Abs
+func AbsPath(pth string) (string, error) {
+	if pth == "" {
+		return "", errors.New("No Path provided")
+	}
+	if len(pth) >= 2 && pth[:2] == "~/" {
+		pth = strings.Replace(pth, "~/", "$HOME/", 1)
+	}
+	return filepath.Abs(os.ExpandEnv(pth))
 }

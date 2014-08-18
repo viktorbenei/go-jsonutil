@@ -4,8 +4,8 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/viktorbenei/go-pathutil",
-			"Comment": "1.0.0-1-g4344c2e",
-			"Rev": "4344c2ea2b232d49c0d189800719bfd6c97c36fb"
+			"Comment": "1.1.0",
+			"Rev": "2882dc6a0279622c4e485a870154679898fddfac"
 		}
 	]
 }
