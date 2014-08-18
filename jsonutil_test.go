@@ -96,6 +96,41 @@ type JsonObjTest struct {
 	BoolField   bool   `json:"bool_field"`
 }
 
+func TestGenerateNonFormattedJSON(t *testing.T) {
+	testObj := JsonObjTest{
+		StringField: "test string field",
+		BoolField:   true,
+	}
+	jsonBytes, err := GenerateNonFormattedJSON(testObj)
+	if err != nil {
+		t.Error("Failed to generate non-formatted JSON: ", err)
+	}
+
+	expectedJSONString := `{"string_field":"test string field","bool_field":true}`
+	if string(jsonBytes) != expectedJSONString {
+		t.Error("Generated non formatted JSON doesn't match. Expected: ", expectedJSONString, " | Got: ", string(jsonBytes))
+	}
+}
+
+func TestGenerateFormattedJSON(t *testing.T) {
+	testObj := JsonObjTest{
+		StringField: "test string field",
+		BoolField:   true,
+	}
+	jsonBytes, err := GenerateFormattedJSON(testObj)
+	if err != nil {
+		t.Error("Failed to generate formatted JSON: ", err)
+	}
+
+	expectedJSONString := `{
+	"string_field": "test string field",
+	"bool_field": true
+}`
+	if string(jsonBytes) != expectedJSONString {
+		t.Error("Generated formatted JSON doesn't match. Expected: ", expectedJSONString, " | Got: ", string(jsonBytes))
+	}
+}
+
 func TestReadObjectFromJSONReader(t *testing.T) {
 	testConfigJsonContent := `{
 	"string_field": "string_value",

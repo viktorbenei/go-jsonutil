@@ -46,6 +46,14 @@ func ReadObjectFromJSONFile(fpath string, v interface{}) error {
 	return ReadObjectFromJSONReader(file, v)
 }
 
+func GenerateNonFormattedJSON(v interface{}) ([]byte, error) {
+	jsonContBytes, err := json.Marshal(v)
+	if err != nil {
+		return []byte{}, err
+	}
+	return jsonContBytes, nil
+}
+
 func GenerateFormattedJSON(v interface{}) ([]byte, error) {
 	jsonContBytes, err := json.MarshalIndent(v, "", "\t")
 	if err != nil {
